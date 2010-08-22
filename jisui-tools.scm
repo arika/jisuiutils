@@ -13,6 +13,28 @@
   )
 )
 
+(define (the-image)
+  (aref (car (cdr (gimp-image-list))) 0)
+)
+(define (the-layer)
+  (car (gimp-image-get-active-layer (the-image)))
+)
+
+(define (selection-grow-and-shrink img params)
+  (if (not (null? params))
+    (let* (
+            (param (car params))
+            (rest (cdr params))
+          )
+      (cond
+        ((< param 0) (gimp-selection-shrink img (abs param)))
+        ((> param 0) (gimp-selection-grow img param))
+      )
+      (selection-grow-and-shrink img rest)
+    )
+  )
+)
+
 ; 範囲の前のほうからなめていって0より大きい値が出るところを検出する
 (define (detect-positive-intensity layer start-range end-range step)
   (let* (
@@ -59,6 +81,31 @@
   )
 )
 
+(define (detect-x-percent-of-peak-of-intensity layer x start step)
+  (let *(
+          (i (- start step))
+          (value -1)
+          (result -1)
+        )
+    (while (and (< 0 i) (< result 0))
+      (let* (
+              (j (+ i step -1))
+              (histogram (gimp-histogram layer 0 i j))
+              (mean (car (cdr (cddddr histogram))))
+            )
+        (if (< value 0)
+          (set! value (* mean x))
+        )
+        (if (<= mean value)
+          (set! result (+ i step))
+        )
+      )
+      (set! i (- i step))
+    )
+    result
+  )
+)
+
 ; グレースケール画像の白とばしをするためのレベルを推定する
 (define (estimate-levels-of-grayscale-image layer)
   (let* (
@@ -80,6 +127,8 @@
       (if (< high-input 0) ; ちょうど境界にピークがあった場合
         (set! high-input rough-high-input)
       )
+      (set! high-input
+        (detect-x-percent-of-peak-of-intensity layer 0.95 high-input 1))
     )
     (list low-input high-input)
   )
@@ -149,13 +198,13 @@
     (gimp-image-add-layer img copied -1)
     (gimp-image-set-active-layer img copied)
 
-    (plug-in-unsharp-mask 1 img copied 1.0 2.0 24)
+    (plug-in-unsharp-mask 1 img copied 1.0 5.0 37); 500%, 1.0px, 24
     (gimp-by-color-select copied '(255 255 255) 70 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
+
     (gimp-image-remove-layer img copied)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-grow img 1)
-    (gimp-selection-shrink img 1)
+    (selection-grow-and-shrink img '(-2 1 -1))
     (gimp-levels layer HISTOGRAM-VALUE 0 230 1.0 0 255)
+
     (gimp-selection-clear img)
   )
   (gimp-image-undo-group-end img)
@@ -185,30 +234,21 @@
     (gimp-image-add-layer img copied -1)
     (gimp-image-set-active-layer img copied)
 
-    (plug-in-unsharp-mask 1 img copied 0.5 2.0 24)
+    (plug-in-unsharp-mask 1 img copied 0.5 5.0 45); 500%, 0.5px, 24
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-feather img 5)
-    (gimp-selection-grow img 1)
-    (gimp-selection-grow img 1)
-    (gimp-selection-grow img 1)
-    (gimp-selection-grow img 1)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-shrink img 2)
+    (selection-grow-and-shrink img '(-2 -2))
+    (script-fu-distress-selection img layer 127 0 2 5 TRUE TRUE)
+    (selection-grow-and-shrink img '(1 1 1 1 -2 -2 -2))
 
     (plug-in-gauss 1 img copied 2 2 0)
     (gimp-selection-clear img)
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
     (gimp-by-color-select copied '(255 255 255) 40 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
 
-    (gimp-selection-shrink img 1)
-    (gimp-selection-shrink img 1)
-    (gimp-selection-shrink img 1)
+    (selection-grow-and-shrink img '(-1 -1 -1))
     (gimp-image-remove-layer img copied)
     (gimp-levels layer HISTOGRAM-VALUE 0 225 1.0 0 255)
     (gimp-levels layer HISTOGRAM-VALUE 0 225 1.0 0 255)
@@ -241,22 +281,19 @@
     (gimp-image-add-layer img copied -1)
     (gimp-image-set-active-layer img copied)
 
-    (plug-in-unsharp-mask 1 img copied 2.0 2.0 80)
+    (plug-in-unsharp-mask 1 img copied 2.0 5.0 50); 500%, 2.0px, 40
 
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (gimp-selection-shrink img 4)
-    (gimp-selection-shrink img 4)
-    (gimp-selection-feather img 8)
-    (gimp-selection-grow img 8)
-    (gimp-selection-grow img 4)
+    (selection-grow-and-shrink img '(-4 -4))
+    (script-fu-distress-selection img layer 127 0 2 8 TRUE TRUE); 滑らか8
+    (selection-grow-and-shrink img '(8 -4))
     (plug-in-gauss 1 img copied 2 2 0)
     (plug-in-gauss 1 img copied 2 2 0)
 
     (gimp-selection-clear img)
     (plug-in-sel-gauss 1 img copied 25 25); 85 60
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-shrink img 1)
+    (selection-grow-and-shrink img '(-2 -1))
     (gimp-selection-feather img 2)
 
     (gimp-image-remove-layer img copied)
@@ -293,6 +330,10 @@
 ; オーバレイでなくスクリーンで統合するといくらかそれっぽい結果になるが、こちらはトーンが薄くなるような。
 ; ElementsではないPhotoshopの動作と比べないと追求は難しそう。
 ; 「よく分からなければ飛ばしてもよい」とあるし、とりあえずあきらめ。
+;
+; 2010-0822メモ
+; 単行本などソースがきれいだと効果があるようだ。
+; 雑誌からでも事前の処理が十分にできていればうまく効果が出るのかもしれない。
 (define (script-fu-jisui-narrow-and-sharpen img layer)
   (gimp-image-undo-group-start img)
 
@@ -307,14 +348,11 @@
     (gimp-image-add-layer img copied -1)
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (gimp-selection-shrink img 2)
-    (gimp-selection-grow img 10)
-    (gimp-selection-feather img 8)
-    (gimp-selection-grow img 4)
+    (selection-grow-and-shrink img '(-2 10))
+    (script-fu-distress-selection img layer 127 0 2 10 TRUE TRUE)
+    (gimp-selection-grow img 8)
 
-    (gimp-selection-shrink img 10)
-    (gimp-selection-shrink img 10)
-    (gimp-selection-shrink img 5)
+    (selection-grow-and-shrink img '(-10 -10 -5 -5))
     (set! sel1 (car (gimp-selection-save img)))
 
     (gimp-selection-clear img)
@@ -467,7 +505,7 @@
     (gimp-invert copied)
     (gimp-by-color-select copied '(0 0 0) 100 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
     (gimp-image-remove-layer img copied)
-    (plug-in-unsharp-mask 1 img layer 1.0 0.8 20)
+    (plug-in-unsharp-mask 1 img layer 1.0 0.8 30); 80%, 1px, 20
 
     (gimp-selection-clear img)
   )
@@ -495,8 +533,7 @@
   (gimp-image-undo-group-start img)
 
   (gimp-by-color-select layer '(255 255 255) 25 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-  (gimp-selection-shrink img 1)
-  (gimp-selection-shrink img 1)
+  (selection-grow-and-shrink img '(-1 -1))
   (gimp-levels layer HISTOGRAM-VALUE 0 240 1.0 0 255)
   (gimp-selection-clear img)
 
@@ -524,27 +561,29 @@
 ; (きれいにスキャンできているなら縮小と強調くらいでいいのかも。)
 (define (script-fu-jisui-do-all img layer)
   (let* ((merged-layer layer))
-    (gimp-message "[1]")
+    (gimp-message "[1] BEGIN")
     (script-fu-jisui-grayscale img layer)
     (gimp-message "[2]")
-    (reduce-image-size-by-two-stages img layer 4800) ; ここで3200にしてしまうと白飛ばししきれないようだ(ソースによるかも)。PCスペップが十分なら元サイズのままでも構わない。
+;    (reduce-image-size-by-two-stages img layer 4800) ; ここで3200にしてしまうと白飛ばししきれないようだ(ソースによるかも)。PCスペックが十分なら元サイズのままでも構わない。
     (gimp-message "[3]")
     (script-fu-estimate-and-set-levels img layer)
     (gimp-message "[4]")
     (script-fu-jisui-over-exposure-600dpi img layer)
     (gimp-message "[5]")
-; やはりこれを適用すると仕上がりが悪くなる...
+; この時点である程度きれいな仕上がりになっていないところに
+; これを適用すると仕上がりが悪くなる...
+;    (reduce-image-size-by-two-stages img layer 2800)
 ;    (set! merged-layer
 ;      (car (script-fu-jisui-narrow-and-sharpen img layer)))
     (gimp-message "[6]")
     (script-fu-jisui-gammadown-lightgray img merged-layer)
     (gimp-message "[7]")
-    (reduce-image-size-by-two-stages img merged-layer 1600)
+;    (reduce-image-size-by-two-stages img merged-layer 1600)
     (gimp-message "[8]")
     (script-fu-jisui-edge-emphasis img merged-layer)
     (gimp-message "[9]")
     (script-fu-jisui-fixup-over-exposure img merged-layer)
-    (gimp-message "[10]")
+    (gimp-message "[10] FINISH")
   )
 )
 
