@@ -1,5 +1,5 @@
 ; デバッグプリント
-(define (intensity-debug-print i j mean)
+(define (intensity-debug-print i j value)
   (let* (
           (prefix
             (if (= i j)
@@ -9,7 +9,7 @@
             ))
         )
     (gimp-message
-      (string-append prefix " => " (number->string mean)))
+      (string-append prefix " => " (number->string value)))
   )
 )
 
@@ -45,10 +45,10 @@
       (let* (
               (j (+ i step -1))
               (histogram (gimp-histogram layer 0 i j))
-              (mean (car (cdr (cddddr histogram))))
+              (pct (car (cdr (cddddr histogram))))
             )
-        (intensity-debug-print i j mean)
-        (if (> mean 0.0) (set! result i))
+        (intensity-debug-print i j pct)
+        (if (> pct 0.0) (set! result i))
         (set! i (+ i step))
       )
     )
@@ -67,11 +67,11 @@
       (let* (
               (j (+ i step -1))
               (histogram (gimp-histogram layer 0 i j))
-              (mean (car (cdr (cddddr histogram))))
+              (pct (car (cdr (cddddr histogram))))
             )
-        (intensity-debug-print i j mean)
-        (if (>= mean prev)
-          (set! prev mean)
+        (intensity-debug-print i j pct)
+        (if (>= pct prev)
+          (set! prev pct)
           (set! result (+ i step)) ; 一つ前のエリアにピークがある
         )
       )
@@ -82,7 +82,7 @@
 )
 
 (define (detect-x-percent-of-peak-of-intensity layer x start step)
-  (let *(
+  (let* (
           (i (- start step))
           (value -1)
           (result -1)
@@ -91,12 +91,12 @@
       (let* (
               (j (+ i step -1))
               (histogram (gimp-histogram layer 0 i j))
-              (mean (car (cdr (cddddr histogram))))
+              (pct (car (cdr (cddddr histogram))))
             )
         (if (< value 0)
-          (set! value (* mean x))
+          (set! value (* pct x))
         )
-        (if (<= mean value)
+        (if (<= pct value)
           (set! result (+ i step))
         )
       )
@@ -109,27 +109,17 @@
 ; グレースケール画像の白とばしをするためのレベルを推定する
 (define (estimate-levels-of-grayscale-image layer)
   (let* (
-          (rough-step 10)
-          (rough-low-input (detect-positive-intensity layer 0 100 rough-step))
-          (rough-high-input (detect-peak-of-intensity layer 155 255 rough-step))
           (low-input -1)
           (high-input -1)
         )
-    (if (>= rough-low-input 0)
-      (set! low-input
-        (detect-positive-intensity layer rough-low-input (+ rough-low-input rough-step) 1)
-      )
+    (set! low-input
+      (detect-positive-intensity layer 0 100 1)
     )
-    (if (>= rough-high-input 0)
-      (set! high-input
-        (detect-peak-of-intensity layer rough-high-input (+ rough-high-input rough-step) 1)
-      )
-      (if (< high-input 0) ; ちょうど境界にピークがあった場合
-        (set! high-input rough-high-input)
-      )
-      (set! high-input
-        (detect-x-percent-of-peak-of-intensity layer 0.95 high-input 1))
+    (set! high-input
+      (detect-peak-of-intensity layer 155 255 1)
     )
+    (set! high-input
+      (detect-x-percent-of-peak-of-intensity layer 0.55 high-input 1))
     (list low-input high-input)
   )
 )
