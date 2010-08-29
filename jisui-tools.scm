@@ -1,4 +1,4 @@
-; $B%G%P%C%0%W%j%s%H(B
+; デバッグプリント
 (define (intensity-debug-print i j mean)
   (let* (
           (prefix
@@ -35,7 +35,7 @@
   )
 )
 
-; $BHO0O$NA0$N$[$&$+$i$J$a$F$$$C$F(B0$B$h$jBg$-$$CM$,=P$k$H$3$m$r8!=P$9$k(B
+; 範囲の前のほうからなめていって0より大きい値が出るところを検出する
 (define (detect-positive-intensity layer start-range end-range step)
   (let* (
           (i start-range)
@@ -56,7 +56,7 @@
   )
 )
 
-; $BHO0O$N8e$N$[$&$+$i$J$a$F$$$C$F%T!<%/$r8!=P$9$k(B
+; 範囲の後のほうからなめていってピークを検出する
 (define (detect-peak-of-intensity layer start-range end-range step)
   (let* (
           (i (- end-range step))
@@ -72,7 +72,7 @@
         (intensity-debug-print i j mean)
         (if (>= mean prev)
           (set! prev mean)
-          (set! result (+ i step)) ; $B0l$DA0$N%(%j%"$K%T!<%/$,$"$k(B
+          (set! result (+ i step)) ; 一つ前のエリアにピークがある
         )
       )
       (set! i (- i step))
@@ -106,7 +106,7 @@
   )
 )
 
-; $B%0%l!<%9%1!<%k2hA|$NGr$H$P$7$r$9$k$?$a$N%l%Y%k$r?dDj$9$k(B
+; グレースケール画像の白とばしをするためのレベルを推定する
 (define (estimate-levels-of-grayscale-image layer)
   (let* (
           (rough-step 10)
@@ -124,7 +124,7 @@
       (set! high-input
         (detect-peak-of-intensity layer rough-high-input (+ rough-high-input rough-step) 1)
       )
-      (if (< high-input 0) ; $B$A$g$&$I6-3&$K%T!<%/$,$"$C$?>l9g(B
+      (if (< high-input 0) ; ちょうど境界にピークがあった場合
         (set! high-input rough-high-input)
       )
       (set! high-input
@@ -285,7 +285,7 @@
 
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
     (selection-grow-and-shrink img '(-4 -4))
-    (script-fu-distress-selection img layer 127 0 2 8 TRUE TRUE); $B3j$i$+(B8
+    (script-fu-distress-selection img layer 127 0 2 8 TRUE TRUE); 滑らか8
     (selection-grow-and-shrink img '(8 -4))
     (plug-in-gauss 1 img copied 2 2 0)
     (plug-in-gauss 1 img copied 2 2 0)
@@ -323,17 +323,17 @@
 (script-fu-menu-register "script-fu-jisui-over-exposure-600dpi"
                          "<Image>/Filters/Test")
 
-; $BNX3T:Y@~2=%7%c!<%W(B
+; 輪郭細線化シャープ
 ;
-; 2010-08-15$B%a%b(B
-; $B$"$^$j$&$^$/$$$+$J$$!#5U$KJ8;z$J$I$OB@$/$J$j!"%H!<%s$bG;$/$J$C$F$7$^$&!#(B
-; $B%*!<%P%l%$$G$J$/%9%/%j!<%s$GE}9g$9$k$H$$$/$i$+$=$l$C$]$$7k2L$K$J$k$,!"$3$A$i$O%H!<%s$,Gv$/$J$k$h$&$J!#(B
-; Elements$B$G$O$J$$(BPhotoshop$B$NF0:n$HHf$Y$J$$$HDI5a$OFq$7$=$&!#(B
-; $B!V$h$/J,$+$i$J$1$l$PHt$P$7$F$b$h$$!W$H$"$k$7!"$H$j$"$($:$"$-$i$a!#(B
+; 2010-08-15メモ
+; あまりうまくいかない。逆に文字などは太くなり、トーンも濃くなってしまう。
+; オーバレイでなくスクリーンで統合するといくらかそれっぽい結果になるが、こちらはトーンが薄くなるような。
+; ElementsではないPhotoshopの動作と比べないと追求は難しそう。
+; 「よく分からなければ飛ばしてもよい」とあるし、とりあえずあきらめ。
 ;
-; 2010-0822$B%a%b(B
-; $BC19TK\$J$I%=!<%9$,$-$l$$$@$H8z2L$,$"$k$h$&$@!#(B
-; $B;(;o$+$i$G$b;vA0$N=hM}$,==J,$K$G$-$F$$$l$P$&$^$/8z2L$,=P$k$N$+$b$7$l$J$$!#(B
+; 2010-0822メモ
+; 単行本などソースがきれいだと効果があるようだ。
+; 雑誌からでも事前の処理が十分にできていればうまく効果が出るのかもしれない。
 (define (script-fu-jisui-narrow-and-sharpen img layer)
   (gimp-image-undo-group-start img)
 
@@ -419,7 +419,7 @@
 (script-fu-menu-register "script-fu-jisui-narrow-and-sharpen"
                          "<Image>/Filters/Test")
 
-; $BL@3%?'2<$2!#(B($BCf4V?'$+$iGr$KEO$C$FGr$K$h$j$9$.$?$N$r9uB&$KLa$9!#(B)
+; 明灰色下げ。(中間色から白に渡って白によりすぎたのを黒側に戻す。)
 (define (script-fu-jisui-gammadown-lightgray img layer)
   (gimp-image-undo-group-start img)
 
@@ -445,7 +445,7 @@
 (script-fu-menu-register "script-fu-jisui-gammadown-lightgray"
                          "<Image>/Filters/Test")
 
-; $B=L>.(B
+; 縮小
 (define (reduce-image-size-by-two-stages img layer height)
   (gimp-image-undo-group-start img)
 
@@ -492,7 +492,7 @@
 (script-fu-menu-register "script-fu-jisui-reduce-image-size"
                          "<Image>/Filters/Test")
 
-; $BNX3T6/D4(B
+; 輪郭強調
 (define (script-fu-jisui-edge-emphasis img layer)
   (gimp-image-undo-group-start img)
 
@@ -528,7 +528,7 @@
 (script-fu-menu-register "script-fu-jisui-edge-emphasis"
                          "<Image>/Filters/Test")
 
-; $B:G8e$K7Z$/GrHt$P$7(B
+; 最後に軽く白飛ばし
 (define (script-fu-jisui-fixup-over-exposure img layer)
   (gimp-image-undo-group-start img)
 
@@ -555,23 +555,23 @@
 (script-fu-menu-register "script-fu-jisui-fixup-over-exposure"
                          "<Image>/Filters/Test")
 
-; $BA4It(B
-; $B%=!<%9$,;(;o$N>l9g8~$1!#(B
-; $BC19TK\%=!<%9$KBP$7$FE,MQ$9$k$H$d$j$9$.$K$J$k$N$GCm0U!#(B
-; ($B$-$l$$$K%9%-%c%s$G$-$F$$$k$J$i=L>.$H6/D4$/$i$$$G$$$$$N$+$b!#(B)
+; 全部
+; ソースが雑誌の場合向け。
+; 単行本ソースに対して適用するとやりすぎになるので注意。
+; (きれいにスキャンできているなら縮小と強調くらいでいいのかも。)
 (define (script-fu-jisui-do-all img layer)
   (let* ((merged-layer layer))
     (gimp-message "[1] BEGIN")
     (script-fu-jisui-grayscale img layer)
     (gimp-message "[2]")
-;    (reduce-image-size-by-two-stages img layer 4800) ; $B$3$3$G(B3200$B$K$7$F$7$^$&$HGrHt$P$7$7$-$l$J$$$h$&$@(B($B%=!<%9$K$h$k$+$b(B)$B!#(BPC$B%9%Z%C%/$,==J,$J$i85%5%$%:$N$^$^$G$b9=$o$J$$!#(B
+;    (reduce-image-size-by-two-stages img layer 4800) ; ここで3200にしてしまうと白飛ばししきれないようだ(ソースによるかも)。PCスペックが十分なら元サイズのままでも構わない。
     (gimp-message "[3]")
     (script-fu-estimate-and-set-levels img layer)
     (gimp-message "[4]")
     (script-fu-jisui-over-exposure-600dpi img layer)
     (gimp-message "[5]")
-; $B$3$N;~E@$G$"$kDxEY$-$l$$$J;E>e$,$j$K$J$C$F$$$J$$$H$3$m$K(B
-; $B$3$l$rE,MQ$9$k$H;E>e$,$j$,0-$/$J$k(B...
+; この時点である程度きれいな仕上がりになっていないところに
+; これを適用すると仕上がりが悪くなる...
 ;    (reduce-image-size-by-two-stages img layer 2800)
 ;    (set! merged-layer
 ;      (car (script-fu-jisui-narrow-and-sharpen img layer)))
@@ -601,5 +601,5 @@
 (script-fu-menu-register "script-fu-jisui-do-all"
                          "<Image>/Filters/Test")
 
-; $BA4It(B
+; 全部
 
