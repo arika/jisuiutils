@@ -443,7 +443,7 @@
           (orig-height (car (gimp-drawable-height layer)))
           (orig-width (car (gimp-drawable-width layer)))
           (tmp-height (- orig-height (modulo orig-height height)))
-          (tmp-width (* orig-width (/ tmp-height orig-height)))
+          (tmp-width (round (* orig-width (/ tmp-height orig-height))))
         )
     (if (> orig-height height)
       (begin
@@ -451,7 +451,7 @@
           (gimp-image-scale-full
             img tmp-width tmp-height INTERPOLATION-LANCZOS))
         (gimp-image-scale-full
-          img (* tmp-width (/ height tmp-height)) height INTERPOLATION-LANCZOS)
+          img (round (* tmp-width (/ height tmp-height))) height INTERPOLATION-LANCZOS)
       )
     )
   )
