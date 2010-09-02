@@ -271,11 +271,11 @@
     (gimp-image-add-layer img copied -1)
     (gimp-image-set-active-layer img copied)
 
-    (plug-in-unsharp-mask 1 img copied 2.0 2.0 80); 500%, 2.0px, 40
+    (plug-in-unsharp-mask 1 img copied 2.0 5.0 40); 500%, 2.0px, 40
 
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
     (selection-grow-and-shrink img '(-4 -4))
-    (script-fu-distress-selection img layer 127 0 2 8 TRUE TRUE); 滑らか8
+    (gimp-selection-feather img 8)(gimp-selection-sharpen img); 滑らか8
     (selection-grow-and-shrink img '(8 -4))
     (plug-in-gauss 1 img copied 2 2 0)
     (plug-in-gauss 1 img copied 2 2 0)
