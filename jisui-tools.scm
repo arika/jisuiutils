@@ -224,13 +224,13 @@
     (gimp-image-add-layer img copied -1)
     (gimp-image-set-active-layer img copied)
 
-    (plug-in-unsharp-mask 1 img copied 0.5 2.0 24); 500%, 0.5px, 24
+    (plug-in-unsharp-mask 1 img copied 0.5 5.0 24); 500%, 0.5px, 24
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
     (selection-grow-and-shrink img '(-2 -2))
-    (script-fu-distress-selection img layer 127 0 2 5 TRUE TRUE)
+    (gimp-selection-feather img 5)(gimp-selection-sharpen img); 滑らか5
     (selection-grow-and-shrink img '(1 1 1 1 -2 -2 -2))
 
     (plug-in-gauss 1 img copied 2 2 0)
@@ -339,7 +339,7 @@
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
     (selection-grow-and-shrink img '(-2 10))
-    (script-fu-distress-selection img layer 127 0 2 10 TRUE TRUE)
+    (gimp-selection-feather img 10)(gimp-selection-sharpen img); 滑らか10
     (gimp-selection-grow img 8)
 
     (selection-grow-and-shrink img '(-10 -10 -5 -5))
@@ -568,7 +568,7 @@
     (gimp-message "[6]")
     (script-fu-jisui-gammadown-lightgray img merged-layer)
     (gimp-message "[7]")
-;    (reduce-image-size-by-two-stages img merged-layer 1600)
+;    (reduce-image-size-by-two-stages img merged-layer 2000)
     (gimp-message "[8]")
     (script-fu-jisui-edge-emphasis img merged-layer)
     (gimp-message "[9]")
