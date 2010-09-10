@@ -609,5 +609,46 @@
 (script-fu-menu-register "script-fu-jisui-do-all"
                          "<Image>/Filters/Test")
 
-; 全部
-
+; 回転してセーブする
+(define (rotate-and-save image layer type)
+  (if type
+    (gimp-image-rotate image type)
+  )
+  (let* (
+          (filename (car (gimp-image-get-filename image)))
+          (ext #f)
+          (match (vector #f #f))
+        )
+    (if (re-match "^.*\\.([^.]*)$" filename match)
+      (let* ((m (vector-ref match 1)))
+        (set! ext (substring filename (car m) (cdr m)))
+      )
+    )
+    (cond
+      ((re-match "tiff?" ext) 
+        (file-tiff-save RUN-NONINTERACTIVE image layer filename filename 3)
+      )
+      (#t
+       (gimp-file-save RUN-NONINTERACTIVE image layer filename filename)
+      )
+    )
+  )
+)
+; ファイルを回転してセーブする
+(define (file-rotate-and-save filename type)
+  (let* (
+          (image (car (gimp-file-load RUN-NONINTERACTIVE filename filename)))
+          (layer (car (gimp-image-get-active-layer image)))
+        )
+    (rotate-and-save image layer type)
+    (gimp-image-delete image)
+  )
+)
+; 時計回りに回転してセーブする
+(define (file-rotate-cw-and-save filename)
+  (file-rotate-and-save filename ROTATE-90)
+)
+; 反時計回りに回転してセーブする
+(define (file-rotate-ccw-and-save filename)
+  (file-rotate-and-save filename ROTATE-270)
+)
