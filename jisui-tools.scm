@@ -610,12 +610,14 @@
                          "<Image>/Filters/Test")
 
 ; 回転してセーブする
-(define (rotate-and-save image layer type)
+(define (rotate-and-save image layer type filename)
   (if type
     (gimp-image-rotate image type)
   )
+  (if (not filename)
+    (filename (car (gimp-image-get-filename image)))
+  )
   (let* (
-          (filename (car (gimp-image-get-filename image)))
           (ext #f)
           (match (vector #f #f))
         )
@@ -640,7 +642,7 @@
           (image (car (gimp-file-load RUN-NONINTERACTIVE filename filename)))
           (layer (car (gimp-image-get-active-layer image)))
         )
-    (rotate-and-save image layer type)
+    (rotate-and-save image layer type filename)
     (gimp-image-delete image)
   )
 )
