@@ -646,11 +646,18 @@
     (gimp-image-delete image)
   )
 )
-; 時計回りに回転してセーブする
-(define (file-rotate-cw-and-save filename)
+
+; 圧縮してセーブする
+(define (file-rotate-0-save filename)
+  (file-rotate-and-save filename #f)
+)
+; 回転・圧縮してセーブする
+(define (file-rotate-90-save filename)
   (file-rotate-and-save filename ROTATE-90)
 )
-; 反時計回りに回転してセーブする
-(define (file-rotate-ccw-and-save filename)
+(define (file-rotate-180-save filename)
+  (file-rotate-and-save filename ROTATE-180)
+)
+(define (file-rotate-270-save filename)
   (file-rotate-and-save filename ROTATE-270)
 )
