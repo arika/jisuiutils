@@ -185,12 +185,36 @@
 (script-fu-menu-register "script-fu-estimate-and-set-levels"
                          "<Image>/Filters/Test")
 
+(define (script-fu-jisui-increase-gamma-value img layer)
+  (if (= 0 (car (gimp-drawable-is-gray layer)))
+    (begin
+      (gimp-levels layer HISTOGRAM-VALUE 0 255 1.3 0 255)
+      (gimp-displays-flush)
+    )
+  )
+)
+
+(script-fu-register "script-fu-jisui-increase-gamma-value"
+                    "Increase gamma value"
+                    "Increase gamma value"
+                    "ay"
+                    "ay"
+                    "2011-01-07"
+                    ""
+                    SF-IMAGE "Input Image" 0
+                    SF-DRAWABLE "Input Layer" 0
+                    )
+(script-fu-menu-register "script-fu-jisui-increase-gamma-value"
+                         "<Image>/Filters/Test")
+
 (define (script-fu-jisui-grayscale img layer)
   (if (= 0 (car (gimp-drawable-is-gray layer)))
     (begin
       (gimp-image-convert-grayscale img)
-      (gimp-displays-flush)))
+      (gimp-displays-flush)
+    )
   )
+)
 
 (script-fu-register "script-fu-jisui-grayscale"
                     "Make it grayscale..."
@@ -583,6 +607,8 @@
 ;    (reduce-image-size-by-two-stages img layer 4800) ; ここで3200にしてしまうと白飛ばししきれないようだ(ソースによるかも)。PCスペックが十分なら元サイズのままでも構わない。
     (gimp-message "[3]")
     (script-fu-estimate-and-set-levels img layer)
+    (gimp-message "[3.1]")
+    (script-fu-jisui-increase-gamma-value img layer)
     (gimp-message "[4]")
     (script-fu-jisui-over-exposure-600dpi img layer)
     (gimp-message "[5]")
