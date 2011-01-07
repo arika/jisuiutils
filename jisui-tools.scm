@@ -80,6 +80,7 @@
           (i (- end-range step))
           (prev -1)
           (result -1)
+          (min-level 0.01)
         )
     (while (and (<= start-range i) (< result 0))
       (let* (
@@ -88,7 +89,9 @@
               (pct (car (cdr (cddddr histogram))))
             )
         (intensity-debug-print i j pct)
-        (if (>= pct prev)
+        (if (or
+              (< pct min-level) ; min-level未満のピークは無視する
+              (>= pct prev))
           (set! prev pct)
           (set! result (+ i step)) ; 一つ前のエリアにピークがある
         )
@@ -158,6 +161,11 @@
       (begin
         (gimp-levels layer HISTOGRAM-VALUE low-input high-input 1.0 0 255)
         (gimp-displays-flush)
+        (gimp-message
+          (string-append
+            "RESULT: low " (number->string low-input)
+            ", high " (number->string high-input)
+        ))
       )
     )
   )
