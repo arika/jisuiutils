@@ -28,8 +28,8 @@ end
 # 同じく中央値(:median)、分散(:variance)、
 # 四分位数範囲(:iqr)を返す。
 def bw_statistics(histogram, th = 128)
-  black = {pixel: 0, mean: 0.0, variance: 0.0}
-  white = {pixel: 0, mean: 0.0, variance: 0.0}
+  black = {pixel: 0, mean: 0.0, variance: 0.0, max: 0}
+  white = {pixel: 0, mean: 0.0, variance: 0.0, max: 0}
 
   histogram.each do |value, pixel|
     if value < th
@@ -39,6 +39,7 @@ def bw_statistics(histogram, th = 128)
     end
     h[:pixel] += pixel
     h[:mean] += pixel*value
+    h[:max] = pixel if h[:max] < pixel
   end
 
   [black, white].each do |h|
@@ -78,14 +79,26 @@ end
 #
 # 判定方法をブロックで与えることができる。
 def best_channel(path, &sort_index)
-  sort_index ||= proc do |channel, (black, white)|
-    [white[:iqr], black[:iqr], white[:variance], black[:variance]]
+  hg = [:red, :green, :blue].zip(histogram(path)).
+    map {|c, h| [c, bw_statistics(h)] }
+
+  bm_sum, wm_sum = hg.inject([0, 0]) do |memo, (ch, (black, white))|
+    [memo[0] + black[:max],
+      memo[1] + white[:max]]
   end
 
-  [:red, :green, :blue].zip(histogram(path)).
-    map {|c, h| [c, bw_statistics(h)] }.
-    sort_by(&sort_index).
-    first
+  p [bm_sum, wm_sum, bm_sum>wm_sum]
+  if bm_sum > wm_sum
+    hg.each do |ch, stat|
+      stat.reverse!
+    end
+  end
+
+  sort_index ||= proc do |channel, (side_a, side_b)|
+    [side_b[:iqr], side_a[:iqr], side_b[:variance], side_a[:variance]]
+  end
+
+  hg.sort_by(&sort_index).first
 end
 
 p best_channel(ARGV.shift)
