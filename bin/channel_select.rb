@@ -82,19 +82,8 @@ def best_channel(path, &sort_index)
   hg = [:red, :green, :blue].zip(histogram(path)).
     map {|c, h| [c, bw_statistics(h)] }
 
-  bm_sum, wm_sum = hg.inject([0, 0]) do |memo, (ch, (black, white))|
-    [memo[0] + black[:max],
-      memo[1] + white[:max]]
-  end
-
-  if bm_sum > wm_sum
-    hg.each do |ch, stat|
-      stat.reverse!
-    end
-  end
-
-  sort_index ||= proc do |channel, (side_a, side_b)|
-    [side_b[:iqr], side_a[:iqr], side_b[:variance], side_a[:variance]]
+  sort_index ||= proc do |channel, (black, white)|
+    [white[:iqr], black[:iqr], white[:variance], black[:variance]]
   end
 
   hg.sort_by(&sort_index).first
