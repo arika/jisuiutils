@@ -87,7 +87,6 @@ def best_channel(path, &sort_index)
       memo[1] + white[:max]]
   end
 
-  p [bm_sum, wm_sum, bm_sum>wm_sum]
   if bm_sum > wm_sum
     hg.each do |ch, stat|
       stat.reverse!
