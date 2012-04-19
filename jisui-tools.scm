@@ -38,7 +38,8 @@
   (car (gimp-image-get-active-layer (the-image)))
 )
 
-(define (selection-grow-and-shrink img params)
+; 選択領域を広げたり狭めたりする
+(define (selection-grow-or-shrink img params)
   (if (not (null? params))
     (let* (
             (param (car params))
@@ -48,7 +49,7 @@
         ((< param 0) (gimp-selection-shrink img (abs param)))
         ((> param 0) (gimp-selection-grow img param))
       )
-      (selection-grow-and-shrink img rest)
+      (selection-grow-or-shrink img rest)
     )
   )
 )
@@ -229,6 +230,54 @@
 (script-fu-menu-register "script-fu-jisui-grayscale"
                          "<Image>/Filters/Test")
 
+(define (search-layer layers layer)
+  (if (null? layers)
+      nil
+    (if (not (= (car layers) layer))
+        (search-layer (cdr layers) layer)
+      (let* (
+              (found (car layers))
+              (result (yield found))
+            )
+        (list found result)
+      )
+    )
+  )
+)
+(define (replace-layer-by-another-one img layer new-layer)
+  (let* (
+          (layers (gimp-image-get-layers img))
+          (count 0)
+        )
+    (gimp-image-add-layer img new-layer)
+    ;...
+    (set! count (+ count 1))
+  )
+)
+(define (script-fu-make-grayscale-by-red-channel img layer)
+  (if (= 0 (car (gimp-drawable-is-gray layer)))
+    (let* (
+            (new-img (car (plug-in-decompose RUN-NONINTERACTIVE img layer "Red" 1)))
+          )
+      (gimp-displays-flush)
+      new-img
+    )
+  )
+)
+
+(script-fu-register "script-fu-make-grayscale-from-red-channel"
+                    "Make it grayscale..."
+                    "Changes image mode to grayscale"
+                    "ay"
+                    "ay"
+                    "2010-08-13"
+                    ""
+                    SF-IMAGE "Input Image" 0
+                    SF-DRAWABLE "Input Layer" 0
+                    )
+(script-fu-menu-register "script-fu-jisui-grayscale"
+                         "<Image>/Filters/Test")
+
 (define (script-fu-jisui-over-exposure img layer)
   (gimp-image-undo-group-start img)
   (let* (
@@ -242,7 +291,7 @@
     (gimp-by-color-select copied '(255 255 255) 70 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
 
     (gimp-image-remove-layer img copied)
-    (selection-grow-and-shrink img '(-2 1 -1))
+    (selection-grow-or-shrink img '(-2 1 -1))
     (gimp-levels layer HISTOGRAM-VALUE 0 230 1.0 0 255)
 
     (gimp-selection-clear img)
@@ -279,16 +328,16 @@
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (selection-grow-and-shrink img '(-2 -2))
+    (selection-grow-or-shrink img '(-2 -2))
     (gimp-selection-feather img 5)(gimp-selection-sharpen img); 滑らか5
-    (selection-grow-and-shrink img '(1 1 1 1 -2 -2 -2))
+    (selection-grow-or-shrink img '(1 1 1 1 -2 -2 -2))
 
     (plug-in-gauss 1 img copied 2 2 0)
     (gimp-selection-clear img)
     (plug-in-sel-gauss 1 img copied 20 20) ; 20 25
     (gimp-by-color-select copied '(255 255 255) 40 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
 
-    (selection-grow-and-shrink img '(-1 -1 -1))
+    (selection-grow-or-shrink img '(-1 -1 -1))
     (gimp-image-remove-layer img copied)
     (gimp-levels layer HISTOGRAM-VALUE 0 225 1.0 0 255)
     (gimp-levels layer HISTOGRAM-VALUE 0 225 1.0 0 255)
@@ -324,16 +373,16 @@
     (plug-in-unsharp-mask 1 img copied 2.0 5.0 40); 500%, 2.0px, 40
 
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (selection-grow-and-shrink img '(-4 -4))
+    (selection-grow-or-shrink img '(-4 -4))
     (gimp-selection-feather img 8)(gimp-selection-sharpen img); 滑らか8
-    (selection-grow-and-shrink img '(8 -4))
+    (selection-grow-or-shrink img '(8 -4))
     (plug-in-gauss 1 img copied 2 2 0)
     (plug-in-gauss 1 img copied 2 2 0)
 
     (gimp-selection-clear img)
     (plug-in-sel-gauss 1 img copied 25 25); 85 60
     (gimp-by-color-select copied '(255 255 255) 80 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (selection-grow-and-shrink img '(-2 -1))
+    (selection-grow-or-shrink img '(-2 -1))
     (gimp-selection-feather img 2)
 
     (gimp-image-remove-layer img copied)
@@ -388,11 +437,11 @@
     (gimp-image-add-layer img copied -1)
 
     (gimp-by-color-select copied '(255 255 255) 20 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-    (selection-grow-and-shrink img '(-2 10))
+    (selection-grow-or-shrink img '(-2 10))
     (gimp-selection-feather img 10)(gimp-selection-sharpen img); 滑らか10
     (gimp-selection-grow img 8)
 
-    (selection-grow-and-shrink img '(-10 -10 -5 -5))
+    (selection-grow-or-shrink img '(-10 -10 -5 -5))
     (set! sel1 (car (gimp-selection-save img)))
 
     (gimp-selection-clear img)
@@ -573,7 +622,7 @@
   (gimp-image-undo-group-start img)
 
   (gimp-by-color-select layer '(255 255 255) 25 CHANNEL-OP-REPLACE FALSE FALSE 0 FALSE)
-  (selection-grow-and-shrink img '(-1 -1))
+  (selection-grow-or-shrink img '(-1 -1))
   (gimp-levels layer HISTOGRAM-VALUE 0 240 1.0 0 255)
   (gimp-selection-clear img)
 
@@ -608,7 +657,7 @@
     (gimp-message "[3]")
     (script-fu-estimate-and-set-levels img layer)
     (gimp-message "[3.1]")
-    (script-fu-jisui-increase-gamma-value img layer)
+;    (script-fu-jisui-increase-gamma-value img layer)
     (gimp-message "[4]")
     (script-fu-jisui-over-exposure-600dpi img layer)
     (gimp-message "[5]")
