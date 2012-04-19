@@ -103,6 +103,7 @@
   )
 )
 
+; ヒストグラムのピークのx%の位置を検出する
 (define (detect-x-percent-of-peak-of-intensity layer x start step)
   (let* (
           (i (- start step))
@@ -184,7 +185,7 @@
                     )
 
 (script-fu-menu-register "script-fu-estimate-and-set-levels"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-increase-gamma-value img layer)
   (if (= 0 (car (gimp-drawable-is-gray layer)))
@@ -206,7 +207,7 @@
                     SF-DRAWABLE "Input Layer" 0
                     )
 (script-fu-menu-register "script-fu-jisui-increase-gamma-value"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-grayscale img layer)
   (if (= 0 (car (gimp-drawable-is-gray layer)))
@@ -228,7 +229,7 @@
                     SF-DRAWABLE "Input Layer" 0
                     )
 (script-fu-menu-register "script-fu-jisui-grayscale"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (search-layer layers layer)
   (if (null? layers)
@@ -276,7 +277,7 @@
                     SF-DRAWABLE "Input Layer" 0
                     )
 (script-fu-menu-register "script-fu-jisui-grayscale"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-over-exposure img layer)
   (gimp-image-undo-group-start img)
@@ -312,7 +313,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-over-exposure"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-over-exposure-paranoid img layer)
   (gimp-image-undo-group-start img)
@@ -359,7 +360,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-over-exposure-paranoid"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-over-exposure-600dpi img layer)
   (gimp-image-undo-group-start img)
@@ -410,7 +411,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-over-exposure-600dpi"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 輪郭細線化シャープ
 ;
@@ -506,7 +507,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-narrow-and-sharpen"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 明灰色下げ。(中間色から白に渡って白によりすぎたのを黒側に戻す。)
 (define (script-fu-jisui-gammadown-lightgray img layer)
@@ -532,7 +533,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-gammadown-lightgray"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 縮小
 (define (reduce-image-size-by-two-stages img layer height)
@@ -579,7 +580,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-reduce-image-size"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 輪郭強調
 (define (script-fu-jisui-edge-emphasis img layer)
@@ -615,7 +616,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-edge-emphasis"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 最後に軽く白飛ばし
 (define (script-fu-jisui-fixup-over-exposure img layer)
@@ -642,7 +643,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-fixup-over-exposure"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 全部
 ; ソースが雑誌の場合向け。
@@ -690,7 +691,7 @@
                     )
 
 (script-fu-menu-register "script-fu-jisui-do-all"
-                         "<Image>/Filters/Test")
+                         "<Image>/Filters/Jisui")
 
 ; 回転してセーブする
 (define (rotate-and-save image layer type filename)
