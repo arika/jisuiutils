@@ -147,7 +147,7 @@
   )
 )
 
-(define (script-fu-estimate-and-set-levels img layer)
+(define (script-fu-jisui-estimate-and-set-levels img layer)
   (let* (
           (levels (estimate-levels-of-grayscale-image layer))
           (low-input (car levels))
@@ -173,7 +173,7 @@
   )
 )
 
-(script-fu-register "script-fu-estimate-and-set-levels"
+(script-fu-register "script-fu-jisui-estimate-and-set-levels"
                     "Adjust levels..."
                     "Estimates levels and set it to the drawable"
                     "ay"
@@ -184,7 +184,7 @@
                     SF-DRAWABLE "Input Layer" 0
                     )
 
-(script-fu-menu-register "script-fu-estimate-and-set-levels"
+(script-fu-menu-register "script-fu-jisui-estimate-and-set-levels"
                          "<Image>/Filters/Jisui")
 
 (define (script-fu-jisui-increase-gamma-value img layer)
@@ -656,7 +656,7 @@
     (gimp-message "[2]")
 ;    (reduce-image-size-by-two-stages img layer 4800) ; ここで3200にしてしまうと白飛ばししきれないようだ(ソースによるかも)。PCスペックが十分なら元サイズのままでも構わない。
     (gimp-message "[3]")
-    (script-fu-estimate-and-set-levels img layer)
+    (script-fu-jisui-estimate-and-set-levels img layer)
     (gimp-message "[3.1]")
 ;    (script-fu-jisui-increase-gamma-value img layer)
     (gimp-message "[4]")
