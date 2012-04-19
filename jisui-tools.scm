@@ -693,7 +693,10 @@
 (script-fu-menu-register "script-fu-jisui-do-all"
                          "<Image>/Filters/Jisui")
 
-; 回転してセーブする
+; これ以下は白飛ばしとは関係のない
+; ユーティリティ的な関数
+
+; イメージを回転してセーブする
 (define (rotate-and-save image layer type filename)
   (if type
     (gimp-image-rotate image type)
@@ -720,6 +723,7 @@
     )
   )
 )
+
 ; ファイルを回転してセーブする
 (define (file-rotate-and-save filename type)
   (let* (
@@ -731,11 +735,11 @@
   )
 )
 
-; 圧縮してセーブする
+; ファイルを圧縮してセーブする
 (define (file-rotate-0-save filename)
   (file-rotate-and-save filename #f)
 )
-; 回転・圧縮してセーブする
+; ファイルを回転・圧縮してセーブする
 (define (file-rotate-90-save filename)
   (file-rotate-and-save filename ROTATE-90)
 )
