@@ -41,5 +41,5 @@ end
 ARGV.each do |fn|
   pdf = PDF.read(fn)
   fixup!(pdf)
-  pdf.saveas("t_#{fn}")
+  pdf.saveas("#{File.dirname(fn)}/t_#{File.basename(fn)}")
 end
